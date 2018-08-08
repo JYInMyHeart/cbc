@@ -1,6 +1,6 @@
 package ast
 
-import compiler.parser.Token
+import parser.Token
 
 class Location(val sourceName:String,
                val token:CflatToken) {

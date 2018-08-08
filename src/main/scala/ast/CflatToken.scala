@@ -1,6 +1,6 @@
 package ast
 
-import compiler.parser.Token
+import parser.Token
 
 class CflatToken(val token:Token,
                  val isSpecial:Boolean) extends Iterable[CflatToken]{

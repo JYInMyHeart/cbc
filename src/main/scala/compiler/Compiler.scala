@@ -1,6 +1,9 @@
 package compiler
 
-import java.io.FileNotFoundException
+import java.io.{File, FileNotFoundException}
+
+import ast.AST
+import parser.Parser
 
 class Compiler {
   private var errorHandler:ErrorHandler = _
@@ -9,12 +12,12 @@ class Compiler {
     this.errorHandler = new ErrorHandler(program)
   }
 
-  def commandMain(args:Array[String]) = {
+  def commandMain(args:Array[String]):Unit = {
     val opts = parseOptions(args)
     if(opts.mode == CompilerMode.CheckSyntax)
       System.exit(if(checkSyntax(opts)) 0 else 1)
     build(opts.sourceFiles,opts)
-    System(0)
+    System.exit(0)
   }
 
   private def parseOptions(args:Array[String]) =
@@ -38,6 +41,9 @@ class Compiler {
         false
     }
   }
+
+  def parseFile(str: String, options: Options):AST =
+    Parser.parseFile(new File(str),options.loader(),errorHandler,options.doseDebugParser())
 
 
 }

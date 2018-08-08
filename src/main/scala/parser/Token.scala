@@ -1,4 +1,4 @@
-package compiler.parser
+package parser
 
 class Token extends Serializable {
 

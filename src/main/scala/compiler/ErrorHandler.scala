@@ -16,20 +16,20 @@ class ErrorHandler(val programId:String,
     this(progid,new PrintStream(stream),0,0)
   }
 
-  def error(loc:Location,msg:String) = {
+  def error(loc:Location,msg:String): Unit = {
     error(s"${loc.toString}:$msg")
   }
 
-  def error(msg:String) = {
+  def error(msg:String): Unit = {
     stream.println(s"$programId: error: $msg")
     nError += 1
   }
 
-  def warn(loc:Location,msg:String) = {
+  def warn(loc:Location,msg:String): Unit = {
     error(s"${loc.toString}:$msg")
   }
 
-  def warn(msg:String) = {
+  def warn(msg:String): Unit = {
     stream.println(s"$programId: warning: $msg")
     nError += 1
   }
