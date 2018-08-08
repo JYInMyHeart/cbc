@@ -1,10 +1,8 @@
 package compiler
 
-import java.io.PrintStream
+import java.io.{OutputStream, PrintStream}
 
 import ast.Location
-
-import scala.sys.process.processInternal.OutputStream
 
 class ErrorHandler(val programId:String,
                    val stream:PrintStream,
