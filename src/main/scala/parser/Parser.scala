@@ -2,7 +2,7 @@ package parser
 
 import java.io._
 
-import ast.{AST, ExprNode}
+import ast.{AST, ExprNode, TypedefNode}
 import compiler.ErrorHandler
 import entity.Declarations
 import exception.{CompileException, SyntaxException}
@@ -15,7 +15,7 @@ class Parser extends ParserConstants {
   private var sourceName: String = _
   private var loader: LibraryLoader = _
   private var errorHandler: ErrorHandler = _
-  private var knownTypeders: Set[String] = _
+  private var knownTypedefs: Set[String] = _
 
 
   private var trace_enabled = true
@@ -26,7 +26,7 @@ class Parser extends ParserConstants {
     this.sourceName = name
     this.errorHandler = errorHandler
     this.loader = loader
-    this.knownTypeders = Set[String]()
+    this.knownTypedefs = Set[String]()
     if (debug)
       enable_tracing
     else
@@ -119,6 +119,7 @@ class Parser extends ParserConstants {
     var rhs:ExprNode = null
     var expr:ExprNode = null
     var op:String = ""
+    if()
 
   }
 
@@ -194,6 +195,19 @@ class Parser extends ParserConstants {
 
   }
 
+  private def addKnownTypedefs(typedefs: List[TypedefNode]) = {
+    for(n <- typedefs)
+      addType(n.name)
+  }
+
+  private def addType(name: String): Unit = {
+    knownTypedefs += name
+  }
+
+  private def isType(name:String) = {
+    knownTypedefs.contains(name)
+  }
+
   def import_stmts(): Declarations = {
     trace_call("import_stmts")
     try {
@@ -212,7 +226,7 @@ class Parser extends ParserConstants {
           val decls = loader.loadLibrary(libid, errorHandler)
           if (decls != null) {
             impdecls.add(decls)
-            addKnownTypedefs(decls.typedefs())
+            addKnownTypedefs(decls.typedefs.toList)
           }
         } catch {
           case e: CompileException => throw new ParseException(e.getMessage)
