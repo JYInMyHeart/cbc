@@ -2,7 +2,7 @@ package parser
 
 import java.io._
 
-import ast.{AST, ExprNode, TypedefNode}
+import ast._
 import compiler.ErrorHandler
 import entity.Declarations
 import exception.{CompileException, SyntaxException}
@@ -113,13 +113,86 @@ class Parser extends ParserConstants {
     }
   }
 
+  def term(): ExprNode = {
+    trace_call("term")
+    try {
+      var t: TypeNode = null
+      var n: ExprNode = null
+      if (jj_2_21(Int.MinValue)) {
+        consume_token(46)
+        t = ctype()
+        consume_token(51)
+        n = term()
+        return new CastNode(t, n)
+      } else {
+        (if (ntk == -1) getNtk() else ntk) match {
+          case x if x == SIZEOF
+            | x == IDENTIFIER
+            | x == INTEGER
+            | x == CHARACTER
+            | x == STRING
+            | x == 46
+            | x == 57
+            | x == 80
+            | x == 83
+            | x == 84
+            | x == 87
+            | x == 88
+            | x == 89
+            | x == 90 =>
+            n = unary()
+            return n
+          case _ =>
+            la1(43) = gen
+            consume_token(-1)
+            throw new ParseException("")
+        }
+      }
+      throw new Error("Missing return statement in function")
+    } finally trace_return("term")
+  }
+
   def expr(): ExprNode = {
     trace_call("expr")
-    var lhs:ExprNode = null
-    var rhs:ExprNode = null
-    var expr:ExprNode = null
-    var op:String = ""
-    if()
+    try {
+      var lhs: ExprNode = null
+      var rhs: ExprNode = null
+      var expr: ExprNode = null
+      var op: String = ""
+      if (jj_2_19(Int.MinValue)) {
+        lhs = term()
+        consume_token(49)
+        rhs = expr()
+        return new AssignNode(lhs, rhs)
+      } else if (jj_2_20(Int.MinValue)) {
+        lhs = term()
+        op = opassign_op()
+        rhs = expr()
+        return new OpAssignNode(lhs, op, rhs)
+      } else (if (ntk == -1) getNtk() else ntk) match {
+        case x if x == SIZEOF
+          | x == IDENTIFIER
+          | x == INTEGER
+          | x == CHARACTER
+          | x == STRING
+          | x == 46
+          | x == 57
+          | x == 80
+          | x == 83
+          | x == 84
+          | x == 87
+          | x == 88
+          | x == 89
+          | x == 90 =>
+          expr = expr10()
+          return expr
+        case _ =>
+          la1(27) = gen
+          consume_token(-1)
+          throw new ParseException("")
+      }
+      throw new Error("Missing return statement in function")
+    } finally trace_return("expr")
 
   }
 
@@ -196,7 +269,7 @@ class Parser extends ParserConstants {
   }
 
   private def addKnownTypedefs(typedefs: List[TypedefNode]) = {
-    for(n <- typedefs)
+    for (n <- typedefs)
       addType(n.name)
   }
 
@@ -204,7 +277,7 @@ class Parser extends ParserConstants {
     knownTypedefs += name
   }
 
-  private def isType(name:String) = {
+  private def isType(name: String) = {
     knownTypedefs.contains(name)
   }
 
@@ -317,23 +390,23 @@ class Parser extends ParserConstants {
   }
 
 
-  private def p_2_19(xla:Int): Boolean ={
+  private def p_2_19(xla: Int): Boolean = {
     la = xla
     scanpos = token
     lastpos = scanpos
     try {
       !p_3_19()
     } catch {
-      case e:LookaheadSuccess =>
+      case e: LookaheadSuccess =>
         true
     } finally {
-      save(18,xla)
+      save(18, xla)
     }
   }
 
-  private def p_3_19(xla:Int):Boolean = {
-    if(p_3R_39()) return true
-    if(scan_token(49)) return true
+  private def p_3_19(xla: Int): Boolean = {
+    if (p_3R_39()) return true
+    if (scan_token(49)) return true
     false
   }
 
