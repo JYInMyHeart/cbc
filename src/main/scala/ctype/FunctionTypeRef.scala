@@ -1,0 +1,5 @@
+package ctype
+
+class FunctionTypeRef {
+
+}

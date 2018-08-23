@@ -4,6 +4,7 @@ import java.io._
 
 import ast._
 import compiler.ErrorHandler
+import ctype._
 import entity.Declarations
 import exception.{CompileException, SyntaxException}
 import parser.Parser.JJCalls
@@ -111,6 +112,139 @@ class Parser extends ParserConstants {
     } finally {
       trace_return("name")
     }
+  }
+
+  def integerValue(image: String): Long = {
+    val s = image.replaceFirst("[UL]+","")
+    if(s.startsWith("0x") || s.startsWith("0X")){
+      java.lang.Long.parseLong(s.substring(2),16)
+    }else if(s.startsWith("0") && s != "0"){
+      java.lang.Long.parseLong(s.substring(1),8)
+    }else{
+      s.toLong
+    }
+  }
+
+  def typeref_base():TypeRef = {
+    trace_call("typeref_base")
+    try{
+      var t:Token = null
+      var name:Token = null
+      (if (p_ntk == -1) getNtk() else p_ntk) match {
+        case VOID =>
+          t = consume_token(VOID)
+          new VoidTypeRef(location(t))
+        case CHAR =>
+          consume_token(CHAR)
+          IntegerTypeRef.charRef(location(t))
+        case SHORT =>
+          t = consume_token(SHORT)
+          IntegerTypeRef.shortRef(location(t))
+        case INT =>
+          t = consume_token(INT)
+          IntegerTypeRef.intRef(location(t))
+        case LONG =>
+          t = consume_token(LONG)
+          IntegerTypeRef.longRef(location(t))
+        case _ =>
+          p_la1(13) = p_gen
+          if(p_2_14(2)){
+            t = consume_token(UNSIGNED)
+            consume_token(CHAR)
+            IntegerTypeRef.ucharRef(location(t))
+          }else if(p_2_15(2)){
+            t = consume_token(UNSIGNED)
+            consume_token(SHORT)
+            IntegerTypeRef.ushortRef(location(t))
+          }else if(p_2_16(2)){
+            t = consume_token(UNSIGNED)
+            consume_token(INT)
+            IntegerTypeRef.uintRef(location(t))
+          }else{
+            (if (p_ntk == -1) getNtk() else p_ntk) match {
+              case UNSIGNED =>
+                t = consume_token(UNSIGNED)
+                consume_token(LONG)
+                IntegerTypeRef.ulongRef(location(t))
+              case STRUCT =>
+                t  = consume_token(STRUCT)
+                name = consume_token(IDENTIFIER)
+                new StructTypeRef(location(t),name.image)
+              case UNION =>
+                t  = consume_token(UNION)
+                name = consume_token(IDENTIFIER)
+                new UnionTypeRef(location(t),name.image)
+              case _ =>
+                p_la1(14) = p_gen
+                if(isType(getToken(1).image)){
+                  name = consume_token(IDENTIFIER)
+                  new UserTypeRef(location(name),name.image)
+                }else{
+                  consume_token(-1)
+                  throw new ParseException("")
+                }
+            }
+          }
+      }
+      throw new Error("Missing return statement in function")
+    }finally trace_return("typeref_base")
+  }
+
+  def location(token: Token): Location ={
+    new Location(sourceName,token)
+  }
+
+  def typeref() = {
+    trace_call("typeref")
+    try{
+      var ref = typeref_base()
+      var t:Token = null
+      var params:ParamTypeRefs = null
+      var failed = true
+      while(failed){
+        (if (p_ntk == -1) getNtk() else p_ntk) match {
+          case x if x == 46 | x == 55 | x== 57 =>
+          case _ =>
+            p_la1(10) = p_gen
+            failed = false
+        }
+        if(p_2_10(2)){
+          consume_token(55)
+          consume_token(56)
+          ref = new ArrayTypeRef(ref)
+        }else{
+          (if (p_ntk == -1) getNtk() else p_ntk) match {
+            case 55 =>
+              consume_token(55)
+              t = consume_token(INTEGER)
+              consume_token(56)
+              ref = new ArrayTypeRef(ref,integerValue(t.image))
+            case 57 =>
+              consume_token(57)
+              ref = new PointerTypeRef(ref)
+            case 46 =>
+              consume_token(46)
+              params = param_typerefs()
+              consume_token(51)
+              ref = new FunctionTypeRef(ref,params)
+            case _ =>
+
+          }
+        }
+      }
+    }
+  }
+
+  def ctype(): TypeNode = {
+    trace_call("type")
+    try{
+      val ref = typeref()
+      new TypeNode(ref)
+      throw new Error("Missing return statement in function")
+    }finally {
+      trace_return("type")
+    }
+
   }
 
   def term(): ExprNode = {
